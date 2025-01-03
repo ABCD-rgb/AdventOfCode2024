@@ -1,4 +1,4 @@
-def day5part1(rules, pageUpdates):
+def getValidPageUpdates(rules, pageUpdates):
     valid = []
     for pageUpdate in pageUpdates:
         isValid = True
@@ -12,7 +12,11 @@ def day5part1(rules, pageUpdates):
                 continue
         
         valid.append(pageUpdate) if isValid else None
-    
+    return valid
+
+
+def day5part1(rules, pageUpdates):
+    valid = getValidPageUpdates(rules, pageUpdates)
     # get the middle page number on each valid pageUpdate and sum them
     sum = 0
     for row in valid:
@@ -22,6 +26,33 @@ def day5part1(rules, pageUpdates):
     return sum
 
 
+def day5part2(rules, pageUpdates):
+    # get incorrect pageUpdates and correct them (then sum the middle page number)
+    valid = getValidPageUpdates(rules, pageUpdates)
+    invalid = [update for update in pageUpdates if update not in valid]
+    corrected = []
+
+    
+    while invalid != []:    # keep correcting the invalid pageUpdates until all are valid
+        for pageUpdate in invalid:
+            for left, right in rules:
+                if left in pageUpdate and right in pageUpdate:
+                    if pageUpdate.index(left) > pageUpdate.index(right):
+                        leftIndex = pageUpdate.index(left)
+                        rightIndex = pageUpdate.index(right)
+                        pageUpdate[leftIndex], pageUpdate[rightIndex] = pageUpdate[rightIndex], pageUpdate[leftIndex]
+            # make sure that the corrected pageUpdate is actually valid (iterate over and over since the correction may lead to another incorrect pageUpdate)
+            if getValidPageUpdates(rules, [pageUpdate]) != []:
+                corrected.append(pageUpdate)
+        invalid = [update for update in invalid if update not in corrected]
+
+    
+    sum = 0
+    for row in corrected:
+        midIndex = len(row) // 2
+        sum += row[midIndex]
+
+    return sum
 
 rules = []
 pageUpdates = []
@@ -43,4 +74,5 @@ for line in open("5.txt", "r"):
         pageUpdates.append([int(i) for i in row])
 
 
-print(day5part1(rules, pageUpdates))    # 4609
+# print(day5part1(rules, pageUpdates))    # 4609
+print(day5part2(rules, pageUpdates))
